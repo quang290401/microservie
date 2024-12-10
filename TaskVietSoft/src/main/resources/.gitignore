@@ -1,0 +1,3 @@
+# Bỏ qua toàn bộ thư mục chứa credentials.json
+TaskVietSoft/src/main/resources/credentials.json
+
