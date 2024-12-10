@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý sản phẩm</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <th:block th:replace="~{cssImport.html :: layout_import_css}"/>
+    <style>
+        .modal-lg4 {
+            max-width: 40%;
+
+        }
+
+        .modal-lg3 {
+            max-width: 40%;
+
+        }
+
+        .modal-lg2 {
+            max-width: 40%;
+
+        }
+
+        .modal-lg {
+            max-width: 85%;
+
+        }
+
+        .modal-header,
+        .modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Đảm bảo modal được hiển thị rõ ràng */
+        .modal-content {
+            background-color: white !important;
+            filter: none !important;
+            opacity: 1 !important;
+        }
+
+        /* Lớp nền mờ */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5) !important;
+        }
+
+        .image-select-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .image-select-container select {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body class="no-skin">
+<!-- header -->
+<div th:replace="~{admin/common/Header.html}"></div>
+<div th:replace="~{admin/common/menu.html}"></div>
+<!-- header -->
+<div class="content-wrapper">
+    <section class="content">
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div class="page-content">
+                    <div class="card border-primary mb-3" style="max-width: 90%; margin: auto;">
+                        <div class="card-header">
+                            <h3>Quản lý Màu Sắc</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="product-form">
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label for="nameMauSac">Tên</label>
+                                        <input type="text" class="form-control" id="nameMauSac" name="nameMauSac">
+                                        <input type="hidden" class="form-control" id="idMauSac" name="idMauSac">
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="trangThai">Trạng Thái</label>
+                                        <select class="form-control" id="trangThai" name="trangThai" required>
+                                            <option value="1">Đang kinh doanh</option>
+                                            <option value="0">Ngừng kinh doanh</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group text-center">
+                                    <button type="button" class="btn btn-primary" id="btn-add">Thêm</button>
+                                    <button type="button" class="btn btn-secondary" id="btn-update">Cập nhật</button>
+                                    <button type="reset" class="btn btn-warning" id="btn-reset">Reset</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
+                <tr>
+                    <th>Tên </th>
+                    <th>Mã</th>
+                    <th>Ngay Tạo</th>
+                    <th>Trạng Thái</th>
+                    <th>Chọn</th>
+                </tr>
+                </thead>
+                <tbody id="productTable">
+                <!-- Dữ liệu sản phẩm sẽ được thêm vào đây -->
+                </tbody>
+            </table>
+        </div>
+        <!-- /Bảng sản phẩm -->
+<nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-center" id="pagination">
+        <!-- Các liên kết phân trang sẽ được thêm vào đây -->
+    </ul>
+</nav>
+
+    </section>
+</div>
+<!-- footer -->
+<div th:replace="~{admin/common/foodter.html}"></div>
+<th:block th:replace="jsImport.html :: layout_import_js"/>
+</body>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Hàm gọi API và load dữ liệu vào bảng
+        function loadTable() {
+            $.ajax({
+                url: "api/mau-sac/getAll", // Endpoint của API
+                type: "GET",
+                dataType: "json", // Kiểu dữ liệu trả về từ server
+                success: function (data) {
+                    // Làm rỗng bảng trước khi thêm dữ liệu mới
+                    $("#productTable").empty();
+
+                    // Lặp qua dữ liệu và thêm vào bảng
+                    data.forEach(function (item) {
+                        let trangThai = item.trangThai === 1 ? "Đang kinh doanh" : "Ngừng kinh doanh";
+                        const row = `
+                        <tr>
+                            <td>${item.ten}</td>
+                            <td>${item.ma}</td>
+                            <td>${item.ngayTao}</td>
+                            <td>${trangThai}</td>
+                            <td><input type="checkbox" class="mauSac-checkbox"
+                                data-id="${item.id}" data-name="${item.ten}"></td>
+                        </tr>
+                    `;
+                        $("#productTable").append(row); // Thêm dòng mới vào bảng
+                    });
+                },
+                error: function (error) {
+                    console.error("Lỗi khi gọi API: ", error);
+                    alert("Không thể tải dữ liệu.");
+                }
+            });
+        }
+
+        // Gọi API load bảng khi trang được tải
+        loadTable();
+
+        // Gọi API POST để thêm màu sắc
+        $("#btn-add").click(function () {
+            // Thu thập dữ liệu từ form
+            const mauSac = {
+                ten: $("#nameMauSac").val(), // Lấy giá trị từ input có id 'ten'
+                trangThai: $("#trangThai").val() // Kiểm tra trạng thái có phải "true"
+            };
+
+            $.ajax({
+                url: "api/mau-sac", // Endpoint API POST
+                type: "POST",
+                contentType: "application/json", // Loại dữ liệu gửi lên
+                data: JSON.stringify(mauSac), // Chuyển đổi đối tượng JS thành JSON
+                success: function (response) {
+                    alert("Thêm màu sắc thành công!");
+                    loadTable(); // Gọi lại hàm loadTable để làm mới bảng
+                },
+                error: function (error) {
+                    console.error("Lỗi khi thêm màu sắc: ", error);
+                    alert("Lỗi: " + error.responseText);
+                }
+            });
+        });
+
+        // Gọi API PUT để cập nhật màu sắc
+        $("#btn-update").click(function () {
+            // Thu thập dữ liệu từ form
+            const mauSac = {
+                id: $("#idMauSac").val(),
+                ten: $("#nameMauSac").val(), // Lấy giá trị từ input có id 'ten'
+                trangThai: $("#trangThai").val() // Kiểm tra trạng thái có phải "true"
+            };
+
+            $.ajax({
+                url: "api/mau-sac", // Endpoint API PUT
+                type: "PUT",
+                contentType: "application/json", // Loại dữ liệu gửi lên
+                data: JSON.stringify(mauSac), // Chuyển đổi đối tượng JS thành JSON
+                success: function (response) {
+                    alert("Cập nhật màu sắc thành công!");
+                    loadTable(); // Gọi lại hàm loadTable để làm mới bảng
+                },
+                error: function (error) {
+                    console.error("Lỗi khi cập nhật màu sắc: ", error);
+                    alert("Lỗi: " + error.responseText);
+                }
+            });
+        });
+
+        // Xử lý khi chọn checkbox
+        $(document).on("change", ".mauSac-checkbox", function () {
+            // Nếu checkbox được chọn
+            if (this.checked) {
+                // Bỏ chọn các checkbox khác
+                $(".mauSac-checkbox").not(this).prop("checked", false);
+
+                // Lấy dữ liệu từ checkbox được chọn
+                const id = $(this).data("id");
+                const ten = $(this).data("name");
+
+                // Đổ dữ liệu vào các input
+                $("#idMauSac").val(id); // Ẩn id vào input ẩn
+                $("#nameMauSac").val(ten);
+
+            } else {
+                // Nếu bỏ chọn, reset các input
+                $("#idMauSac").val("");
+                $("#nameMauSac").val("");
+                $("#trangThai").val(1); // Default trạng thái
+            }
+        });
+    });
+
+</script>
+
+</html>
