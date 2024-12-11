@@ -1,6 +1,6 @@
 package com.example.api_gateway.common;
 
-import ch.qos.logback.classic.spi.IThrowableProxy;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
