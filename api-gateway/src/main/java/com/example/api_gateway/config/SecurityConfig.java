@@ -3,6 +3,7 @@ package com.example.api_gateway.config;
 import com.example.api_gateway.common.ApiSecurity;
 import com.example.api_gateway.common.CustomAccessDeniedHandler;
 import com.example.api_gateway.common.Permission;
+import com.example.api_gateway.service.ApiRouteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,17 +20,20 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 public class  SecurityConfig {
 
     private final AuthenticationFilter authenticationFilter;
+    private final ApiRouteService apiRouteService;
 
     @Bean // Đánh dấu phương thức này để Spring tạo ra một bean trong context của ứng dụng.
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
+        String[] adminApiPaths = apiRouteService.getAdminApiPaths();
+        String[] userApiPaths = apiRouteService.getUserApiPaths();
         http
                 // Tắt bảo vệ CSRF nếu không cần thiết trong ứng dụng.
                 .csrf(ServerHttpSecurity.CsrfSpec::disable) // CSRF protection thường được tắt trong ứng dụng REST API.
 
                 .authorizeExchange(exchanges -> exchanges // Cấu hình quyền truy cập cho các endpoint.
                         .pathMatchers(ApiSecurity.DEFAULT_API_PUBLIC).permitAll() // Các endpoint công khai có thể truy cập cho tất cả người dùng.
-                        .pathMatchers(ApiSecurity.DEFAULT_API_ADMIN).hasAuthority(Permission.ADMIN_CREATE.getPermission()) // Các endpoint chỉ cho phép người dùng có quyền "ADMIN_CREATE".
-                        .pathMatchers(ApiSecurity.DEFAULT_API_USER).hasRole(ApiSecurity.DEFAULT_USER_ROLE) // Các endpoint yêu cầu người dùng có vai trò "USER".
+                        .pathMatchers(adminApiPaths).hasAuthority(Permission.ADMIN_CREATE.getPermission()) // Các endpoint chỉ cho phép người dùng có quyền "ADMIN_CREATE".
+                        .pathMatchers(userApiPaths).hasRole(ApiSecurity.DEFAULT_USER_ROLE) // Các endpoint yêu cầu người dùng có vai trò "USER".
                         .anyExchange().authenticated() // Mọi endpoint khác yêu cầu người dùng phải xác thực.
                 )
 
