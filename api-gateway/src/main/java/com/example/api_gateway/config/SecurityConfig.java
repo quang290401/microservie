@@ -18,6 +18,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @EnableWebFluxSecurity
 @RequiredArgsConstructor
 public class  SecurityConfig {
+    //
 
     private final AuthenticationFilter authenticationFilter;
     private final ApiRouteService apiRouteService;
