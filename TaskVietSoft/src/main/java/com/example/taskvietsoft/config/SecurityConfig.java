@@ -29,8 +29,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtFilTer jwtFilTer;
-
-
     /**
      * Cấu hình bảo mật cho các yêu cầu HTTP.
      * Phương thức này định nghĩa cách mà các yêu cầu sẽ được bảo vệ.
